@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>齐君·专业资源库</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+  body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;background:#0E202E;}
+  img{display:block;}
+
+  /* 字体内嵌 */
+  @font-face{font-family:"D-DIN Condensed";src:url("fonts/D-DINCondensed.otf") format("opentype");font-weight:400;font-display:swap;}
+  @font-face{font-family:"D-DIN";src:url("fonts/D-DIN.otf") format("opentype");font-weight:400;font-display:swap;}
+  @font-face{font-family:"D-DIN";src:url("fonts/D-DIN-Bold.otf") format("opentype");font-weight:700;font-display:swap;}
+  @font-face{font-family:"Alibaba PuHuiTi 3.0";src:url("fonts/AlibabaPuHuiTi-3-55-Regular.ttf") format("truetype");font-weight:400;font-display:swap;}
+  @font-face{font-family:"Alibaba PuHuiTi 3.0";src:url("fonts/AlibabaPuHuiTi-3-65-Medium.ttf") format("truetype");font-weight:500;font-display:swap;}
+  @font-face{font-family:"Alibaba PuHuiTi 3.0";src:url("fonts/AlibabaPuHuiTi-3-75-SemiBold.ttf") format("truetype");font-weight:600;font-display:swap;}
+  .scale-wrap{position:relative;width:100%;overflow:hidden;}
+  .stage{width:1920px;position:absolute;top:0;left:50%;transform-origin:top center;}
+
+  section{position:relative;width:1920px;display:flex;flex-direction:column;align-items:flex-start;}
+  section.flush{padding:0;}
+
+  .stage{--overlap:0;}
+  section.ovl{margin-top:var(--overlap);}
+
+  section{opacity:0;transform:translateY(40px);transition:opacity .7s ease,transform .7s ease;}
+  section.reveal{opacity:1;transform:none;}
+
+  .slot img{width:100%;height:auto;}
+  .gif-blend{mix-blend-mode:screen;}
+  video.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  .crop-wrap{overflow:hidden;position:absolute;}
+  .crop-wrap img{position:absolute;}
+
+  .hover-card{transition:transform .6s cubic-bezier(.25,.8,.35,1);}
+  .hover-card:hover{transform:translateY(-16px);}
+
+  .marquee{position:relative;overflow:hidden;}
+  .marquee::before,.marquee::after{content:"";position:absolute;left:0;right:0;height:60px;z-index:2;pointer-events:none;}
+  .marquee::before{top:0;background:linear-gradient(180deg,var(--mq-fade,#0E202E) 0%,rgba(14,32,46,0) 100%);}
+  .marquee::after{bottom:0;background:linear-gradient(0deg,var(--mq-fade,#0E202E) 0%,rgba(14,32,46,0) 100%);}
+  .mq-track{display:flex;flex-direction:column;animation:mqLoop var(--mq-dur,18s) linear infinite;}
+  .marquee:hover .mq-track{animation-play-state:paused;}
+  @keyframes mqLoop{to{transform:translateY(calc(-1 * var(--mq-loop,996px)));}}
+
+  .cup{position:absolute;white-space:nowrap;}
+
+  html.static *, html.static *::before, html.static *::after{animation:none !important;transition:none !important;}
+  html.static section{opacity:1 !important;transform:none !important;}
+
+  /* ===== 全局设计 Token ===== */
+  :root{
+    --accent:#C9F80A;
+    --accent-dim:rgba(201,248,10,0.08);
+    --accent-border:rgba(201,248,10,0.2);
+    --card-bg:rgba(255,255,255,0.05);
+    --card-blur:blur(25px);
+    --glass-bg:rgba(8,17,25,0.44);
+    --glass-blur:blur(100px);
+    --page-bg:#0E202E;
+    --text-white:#FFFFFF;
+    --text-dim:rgba(255,255,255,0.6);
+    --text-body:rgba(255,255,255,0.9);
+    --font-main:"Alibaba PuHuiTi 3.0","PingFang SC","Microsoft YaHei",sans-serif;
+  }
+
+  /* ===== 共用标题样式 ===== */
+  .sec-title{
+    font-family:var(--font-main);
+    font-weight:600;
+    font-size:60px;
+    line-height:1.3em;
+    letter-spacing:0.07em;
+    color:var(--text-white);
+    text-shadow:0px 8px 30px 0px rgba(0,0,0,0.6);
+    position:relative;
+    display:inline-block;
+  }
+  .sec-title .dot{
+    position:absolute;
+    right:-38px;
+    top:40px;
+    width:29px;
+    height:29px;
+    background:linear-gradient(0deg, rgba(201,248,10,1) 0%, rgba(201,248,10,0.7) 100%);
+    clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+  }
+  .title-center{display:flex;align-items:center;gap:20px;justify-content:center;}
+  .title-center .line{width:36px;height:2px;background:linear-gradient(90deg,rgba(201,248,10,0.8),rgba(201,248,10,0.2));opacity:0.8;}
+
+  /* 查看详情按钮 */
+  .more-btn{
+    display:flex;align-items:center;gap:8px;cursor:pointer;
+    font-family:var(--font-main);font-weight:500;font-size:16px;color:var(--accent);
+  }
+  .more-btn::after{content:"→";font-size:14px;}
+
+  /* 分类 tabs */
+  .tabs{display:flex;align-items:center;gap:16px;}
+  .tab{
+    padding:8px 20px;border-radius:4px;cursor:pointer;
+    font-family:var(--font-main);font-weight:500;font-size:16px;letter-spacing:0.04em;
+    color:rgba(201,248,10,0.9);background:var(--accent-dim);
+    border:none;outline:none;
+  }
+  .tab.active{background:var(--accent);color:#0B1C24;}
+
+  /* 毛玻璃大容器 */
+  .glass-box{
+    background:var(--glass-bg);
+    backdrop-filter:var(--glass-blur);
+    -webkit-backdrop-filter:var(--glass-blur);
+    border-radius:50px;
+    padding:80px 100px;
+  }
+
+  /* 教师头像轮播 */
+  .t-avatar{transition:all .3s ease;box-sizing:border-box;}
+  .t-avatar img{transition:all .3s ease;}
+
+  /* 数字教材封面轮播 */
+  .book-cover{transition:all .4s cubic-bezier(.25,.8,.35,1);cursor:pointer;}
+  .book-cover-wrap{transition:all .4s cubic-bezier(.25,.8,.35,1);flex-shrink:0;}
+  .book-cover-wrap:first-child{transition:margin-left .5s cubic-bezier(.25,.8,.35,1), all .4s cubic-bezier(.25,.8,.35,1);}
+
+  /* 虚拟展厅菜单 */
+  .exhibit-tab{
+    padding:30px;background:rgba(255,255,255,0.05);
+    border:1.5px solid rgba(201,248,10,0.2);
+    backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+    border-radius:4px;display:flex;flex-direction:column;gap:20px;
+    cursor:pointer;transition:all .3s ease;
+  }
+  .exhibit-tab.active{border-color:var(--accent);}
+  .et-row{display:flex;justify-content:space-between;align-items:center;}
+  .et-title{font-family:var(--font-main);font-weight:700;font-size:18px;letter-spacing:0.04em;color:rgba(255,255,255,0.8);transition:color .3s;}
+  .exhibit-tab.active .et-title{color:rgba(255,255,255,0.95);}
+  .et-sub{font-family:'Inter',sans-serif;font-size:12px;color:rgba(201,248,10,0.7);}
+  .et-bar{height:3px;background:rgba(255,255,255,0.1);border-radius:2px;transition:background .3s;}
+  .exhibit-tab.active .et-bar{background:var(--accent);}
+
+  /* 小卡片 */
+  .card{
+    background:var(--card-bg);
+    backdrop-filter:var(--card-blur);
+    -webkit-backdrop-filter:var(--card-blur);
+    border:1.5px solid rgba(201,248,10,0.2);
+    border-radius:4px;
+    padding:24px;
+    flex:1;
+  }
+  .card.active,.card:hover{
+    border-color:var(--accent);
+    box-shadow:0px 10px 40px -6.67px rgba(201,248,10,0.25);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  }
+  .card-thumb{width:100%;height:240px;object-fit:cover;border-radius:4px;display:block;}
+  .card-content{margin-top:20px;display:flex;flex-direction:column;gap:12px;}
+  .card-title{font-family:var(--font-main);font-weight:500;font-size:20px;letter-spacing:0.04em;color:rgba(255,255,255,0.9);}
+  .card-meta{display:flex;justify-content:space-between;align-items:center;}
+  .card-meta-nums{display:flex;align-items:center;gap:16px;}
+  .meta-pair{display:flex;align-items:center;gap:6px;}
+  .meta-num{font-family:'D-DIN',sans-serif;font-weight:700;font-size:18px;color:rgba(201,248,10,0.8);}
+  .meta-label{font-family:var(--font-main);font-weight:400;font-size:16px;color:rgba(255,255,255,0.7);}
+  .meta-div{width:1px;height:18px;background:rgba(255,255,255,0.1);}
+
+  /* 题库卡片 */
+  .qcard{
+    background:var(--card-bg);
+    backdrop-filter:blur(50px);-webkit-backdrop-filter:blur(50px);
+    border:1.5px solid rgba(201,248,10,0.1);
+    border-radius:4px;padding:24px;flex:1;
+    display:flex;flex-direction:column;gap:16px;
+    transition:transform .6s cubic-bezier(.25,.8,.35,1), border-color .3s, box-shadow .3s;
+  }
+  .qcard.active,.qcard:hover{border-color:var(--accent);box-shadow:0px 10px 40px -6.67px rgba(201,248,10,0.25);backdrop-filter:blur(10px);transform:translateY(-16px);}
+  .qtag{
+    display:inline-flex;padding:4px 8px;border-radius:4px;
+    font-family:var(--font-main);font-weight:500;font-size:12px;
+    width:fit-content;
+  }
+  .qtag.green{background:rgba(23,229,195,0.05);border:1px solid rgba(23,229,195,0.1);color:rgba(23,229,195,0.9);}
+  .qtag.blue{background:rgba(51,202,255,0.05);border:1px solid rgba(51,202,255,0.1);color:rgba(51,202,255,0.9);}
+  .qtag.yellow{background:rgba(248,182,50,0.05);border:1px solid rgba(248,182,50,0.1);color:rgba(248,182,50,0.9);}
+  .qtext{
+    font-family:var(--font-main);font-weight:500;font-size:20px;
+    line-height:1.8em;letter-spacing:0.04em;color:var(--text-body);
+    height:72px;overflow:hidden;
+  }
+  .qfooter{
+    display:flex;justify-content:space-between;align-items:center;
+    padding-top:16px;border-top:1px solid rgba(201,248,10,0.2);
+  }
+  .qfooter-info{font-family:var(--font-main);font-size:13px;color:var(--text-dim);}
+
+  /* 左边数据（课程中心） */
+  .sidebar{
+    width:236px;align-self:stretch;display:flex;flex-direction:column;justify-content:space-between;
+  }
+  .sidebar-item{
+    width:236px;height:48px;padding:0 24px;display:flex;align-items:center;gap:20px;
+    background:var(--card-bg);border:1.5px solid rgba(201,248,10,0.2);
+    border-radius:4px;backdrop-filter:var(--card-blur);-webkit-backdrop-filter:var(--card-blur);
+    white-space:nowrap;flex-shrink:0;
+  }
+  .s-num{font-family:'D-DIN',sans-serif;font-weight:700;font-size:18px;color:rgba(201,248,10,0.8);}
+  .s-label{font-family:var(--font-main);font-weight:400;font-size:16px;color:rgba(255,255,255,0.7);}
+
+  /* 鼠标跟随 Spotlight + 卡片局部描边高亮 */
+  #spotlight{
+    position:fixed;left:0;top:0;
+    width:520px;height:520px;
+    border-radius:50%;
+    pointer-events:none;z-index:9999;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(circle at center, rgba(165,243,252,0.16) 0%, rgba(165,243,252,0.06) 30%, transparent 66%);
+    opacity:0;
+    transition:opacity 0.5s ease;
+    mix-blend-mode:screen;
+  }
+  .spotlight-active #spotlight{opacity:1;}
+  .card, .qcard, .glass-box{position:relative;}
+  .card::after, .qcard::after, .glass-box::after{
+    content:'';position:absolute;inset:0;border-radius:inherit;
+    padding:1.5px;
+    background:radial-gradient(circle 110px at var(--mx,50%) var(--my,50%), rgba(165,243,252,0.55), transparent 70%);
+    -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor;
+    mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite:exclude;
+    pointer-events:none;opacity:0;transition:opacity .3s ease;
+  }
+  .card:hover::after, .qcard:hover::after, .glass-box:hover::after{opacity:1;}
+</style>
+<script>if(location.search.indexOf('static')>=0){document.documentElement.classList.add('static');}</script>
+</head>
+<body>
+<div class="scale-wrap" id="scaleWrap"><div class="stage" id="stage">
+
+<!-- ===== S1: 首屏 900px ===== -->
+<section class="flush reveal" style="height:900px;overflow:hidden;background:#0a1a26;">
+  <!-- 背景视频 -->
+  <video class="bg" autoplay muted loop playsinline style="z-index:0;">
+    <source src="assets/首屏-视频.mp4" type="video/mp4">
+  </video>
+  <!-- 半透明遮罩 -->
+  <div style="position:absolute;inset:0;background:rgba(0,0,0,0.5);z-index:1;"></div>
+
+  <!-- 导航栏 (top=0, 1920宽, blur(9.55px), 渐变透明底) -->
+  <div style="position:absolute;top:0;left:0;width:1920px;height:auto;z-index:20;padding:20px 160px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,rgba(0,0,0,0.3) 0%,rgba(0,0,0,0) 100%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);">
+    <!-- Logo -->
+    <img src="assets/首屏-logo.png" style="width:286px;height:48px;">
+    <!-- 导航链接 -->
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="padding:10px 15px;border-radius:34px;font-family:var(--font-main);font-weight:600;font-size:17px;color:#fff;cursor:pointer;">首页</span>
+      <span style="padding:10px 15px;border-radius:54px;font-family:'Microsoft YaHei',sans-serif;font-size:17px;color:rgba(255,255,255,0.7);cursor:pointer;">专业介绍</span>
+      <span style="padding:10px 15px;border-radius:54px;font-family:'Microsoft YaHei',sans-serif;font-size:17px;color:rgba(255,255,255,0.7);cursor:pointer;">培养体系</span>
+      <span style="padding:10px 15px;border-radius:54px;font-family:'Microsoft YaHei',sans-serif;font-size:17px;color:rgba(255,255,255,0.7);cursor:pointer;">课程中心</span>
+      <span style="padding:10px 15px;border-radius:54px;font-family:'Microsoft YaHei',sans-serif;font-size:17px;color:rgba(255,255,255,0.7);cursor:pointer;">素材中心</span>
+      <span style="padding:10px 15px;border-radius:54px;font-family:'Microsoft YaHei',sans-serif;font-size:17px;color:rgba(255,255,255,0.7);cursor:pointer;">题库中心</span>
+      <span style="padding:10px 15px;border-radius:54px;font-family:'Microsoft YaHei',sans-serif;font-size:17px;color:rgba(255,255,255,0.7);cursor:pointer;">数据中心</span>
+      <span style="padding:10px 15px;border-radius:54px;font-family:'Microsoft YaHei',sans-serif;font-size:17px;color:rgba(255,255,255,0.7);cursor:pointer;">岗位能力模型</span>
+      <span style="padding:10px 15px;border-radius:54px;font-family:'Microsoft YaHei',sans-serif;font-size:17px;color:rgba(255,255,255,0.7);cursor:pointer;">虚拟教研室</span>
+      <span style="padding:10px 15px;border-radius:54px;font-family:'Microsoft YaHei',sans-serif;font-size:17px;color:rgba(255,255,255,0.7);cursor:pointer;">更多</span>
+    </div>
+    <!-- 登录按钮 -->
+    <div style="padding:6px 20px;border:1px solid rgba(201,248,10,0.4);border-radius:100px;display:flex;align-items:center;gap:4px;cursor:pointer;">
+      <span style="font-family:'PingFang SC',sans-serif;font-weight:500;font-size:16px;letter-spacing:0.04em;color:var(--accent);">登录</span>
+    </div>
+  </div>
+
+  <!-- 主标语 (x=160,y=200) -->
+  <div style="position:absolute;left:160px;top:200px;z-index:10;display:flex;flex-direction:column;align-items:flex-start;gap:30px;">
+    <h1 style="font-family:var(--font-main);font-weight:600;font-size:76px;line-height:1.3em;letter-spacing:0.07em;color:#fff;text-shadow:0px 8px 20px rgba(0,0,0,0.6);white-space:pre-line;">汽车智能技术
+专业资源库</h1>
+    <p style="font-family:var(--font-main);font-weight:400;font-size:20px;line-height:1.2em;letter-spacing:0.22em;color:rgba(255,255,255,0.9);">汇聚优质教学资源·服务人才培养与专业建设</p>
+  </div>
+
+  <!-- 首屏-下 (x=160,y=489, row, gap=98, align:flex-end) -->
+  <div style="position:absolute;left:160px;top:489px;z-index:10;display:flex;align-items:flex-end;gap:98px;width:1600px;">
+    <!-- 数据统计行 (gap=80, 底线 border) -->
+    <div style="display:flex;align-items:center;gap:80px;padding:30px 0px;border-bottom:1px solid rgba(255,255,255,0.1);">
+      <div style="display:flex;flex-direction:column;gap:16px;"><div style="display:flex;align-items:flex-end;gap:8px;justify-content:center;"><span style="font-family:'D-DIN Condensed';font-weight:400;font-size:60px;text-transform:uppercase;color:var(--accent);">1,098,923</span><span style="font-family:'PingFang SC',sans-serif;font-weight:400;font-size:18px;color:rgba(255,255,255,0.8);opacity:0.8;">次</span></div><span style="font-family:'PingFang SC',sans-serif;font-weight:400;font-size:18px;line-height:30px;letter-spacing:0.08em;color:rgba(255,255,255,0.7);">总访问量</span></div>
+      <div style="display:flex;flex-direction:column;gap:16px;"><div style="display:flex;align-items:flex-end;gap:8px;justify-content:center;"><span style="font-family:'D-DIN Condensed';font-weight:400;font-size:60px;text-transform:uppercase;color:var(--accent);">100</span><span style="font-family:'PingFang SC',sans-serif;font-weight:400;font-size:18px;color:rgba(255,255,255,0.8);opacity:0.8;">%</span></div><span style="font-family:'PingFang SC',sans-serif;font-weight:400;font-size:18px;line-height:30px;letter-spacing:0.08em;color:rgba(255,255,255,0.7);">课程使用率</span></div>
+      <div style="display:flex;flex-direction:column;gap:16px;"><div style="display:flex;align-items:flex-end;gap:8px;justify-content:center;"><span style="font-family:'D-DIN Condensed';font-weight:400;font-size:60px;text-transform:uppercase;color:var(--accent);">89</span><span style="font-family:'PingFang SC',sans-serif;font-weight:400;font-size:18px;color:rgba(255,255,255,0.8);opacity:0.8;">%</span></div><span style="font-family:'PingFang SC',sans-serif;font-weight:400;font-size:18px;line-height:30px;letter-spacing:0.08em;color:rgba(255,255,255,0.7);">资源原创率</span></div>
+      <div style="display:flex;flex-direction:column;gap:16px;"><div style="display:flex;align-items:flex-end;gap:8px;justify-content:center;"><span style="font-family:'D-DIN Condensed';font-weight:400;font-size:60px;text-transform:uppercase;color:var(--accent);">5+</span><span style="font-family:'PingFang SC',sans-serif;font-weight:400;font-size:18px;color:rgba(255,255,255,0.8);opacity:0.8;">学期</span></div><span style="font-family:'PingFang SC',sans-serif;font-weight:400;font-size:20px;line-height:30px;letter-spacing:0.08em;color:rgba(255,255,255,0.7);">上线时长</span></div>
+      <div style="display:flex;flex-direction:column;gap:16px;"><div style="display:flex;align-items:flex-end;gap:8px;justify-content:center;"><span style="font-family:'D-DIN Condensed';font-weight:400;font-size:60px;text-transform:uppercase;color:var(--accent);">96</span><span style="font-family:'PingFang SC',sans-serif;font-weight:400;font-size:18px;color:rgba(255,255,255,0.8);opacity:0.8;">%</span></div><span style="font-family:'PingFang SC',sans-serif;font-weight:400;font-size:18px;line-height:30px;letter-spacing:0.08em;color:rgba(255,255,255,0.7);">用户活跃率</span></div>
+      <div style="display:flex;flex-direction:column;gap:16px;"><div style="display:flex;align-items:flex-end;gap:8px;justify-content:center;"><span style="font-family:'D-DIN Condensed';font-weight:400;font-size:60px;text-transform:uppercase;color:var(--accent);">86</span><span style="font-family:'PingFang SC',sans-serif;font-weight:400;font-size:18px;color:rgba(255,255,255,0.8);opacity:0.8;">%</span></div><span style="font-family:'PingFang SC',sans-serif;font-weight:400;font-size:18px;line-height:30px;letter-spacing:0.08em;color:rgba(255,255,255,0.7);">资源活跃率</span></div>
+      <div style="display:flex;flex-direction:column;gap:16px;"><div style="display:flex;align-items:flex-end;gap:8px;justify-content:center;"><span style="font-family:'D-DIN Condensed';font-weight:400;font-size:60px;text-transform:uppercase;color:var(--accent);">100</span><span style="font-family:'PingFang SC',sans-serif;font-weight:400;font-size:18px;color:rgba(255,255,255,0.8);opacity:0.8;">%</span></div><span style="font-family:'PingFang SC',sans-serif;font-weight:400;font-size:18px;line-height:30px;letter-spacing:0.08em;color:rgba(255,255,255,0.7);">题目使用率</span></div>
+    </div>
+    <!-- 智能体 (frame 207×311) -->
+    <div style="position:relative;width:207px;height:311px;flex-shrink:0;">
+      <!-- 气泡 (left=-209, top=4) -->
+      <div style="position:absolute;left:-209px;top:4px;padding:20px;background:linear-gradient(135deg,rgba(0,0,0,0.5) 3%,rgba(0,0,0,0.3) 100%);border:1.5px solid rgba(201,248,10,0.4);border-radius:12px 12px 0px 12px;z-index:6;">
+        <span style="font-family:'PingFang SC',sans-serif;font-weight:400;font-size:18px;line-height:30px;letter-spacing:0.08em;color:rgba(255,255,255,0.9);white-space:pre-line;">你好，我是专业智能体
+有任何问题都可以点我提问哦</span>
+      </div>
+      <!-- 智能体图片 (x=2,y=38,w=272,h=272) -->
+      <img src="assets/首屏-动态智能体.png" style="position:absolute;left:2px;top:38px;width:272px;height:272px;object-fit:contain;">
+    </div>
+  </div>
+</section>
+
+<!-- ===== 主内容区背景（多层径向渐变） ===== -->
+<section class="flush reveal" style="background:#0E202E;padding:0;">
+  <!-- 全局背景渐变层 -->
+  <div style="position:absolute;inset:0;
+    background:
+      radial-gradient(circle at 50% 52%, rgba(201,248,10,0.12) 0%, rgba(201,248,10,0) 70%),
+      radial-gradient(circle at 50% 12%, rgba(201,248,10,0.08) 0%, rgba(201,248,10,0) 24%),
+      radial-gradient(circle at 57% 100%, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 35%),
+      radial-gradient(circle at 100% -1%, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 100%);
+    pointer-events:none;z-index:0;">
+  </div>
+
+  <div style="position:relative;z-index:1;width:1920px;display:flex;flex-direction:column;">
+
+    <!-- ===== S2a: 专业概况 top=119 ===== -->
+    <div style="padding:119px 160px 80px;display:flex;gap:60px;align-items:flex-start;" class="inner-sec" data-sec="专业概况">
+      <!-- 左文 -->
+      <div style="flex:1;display:flex;flex-direction:column;gap:40px;">
+        <div style="display:flex;align-items:center;gap:20px;padding-right:50px;">
+          <img src="assets/专业概况-标题.png" style="width:299px;height:78px;">
+        </div>
+        <!-- 分类+详情行 -->
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="tabs">
+            <button class="tab active">院校资源</button>
+            <button class="tab">企业合作</button>
+            <button class="tab">建设成果</button>
+          </div>
+          <img src="assets/课程中心-查看更多.png" style="width:87px;height:22px;cursor:pointer;">
+        </div>
+        <p style="font-family:'PingFang SC','Microsoft YaHei',sans-serif;font-size:16px;line-height:2.2em;letter-spacing:0.04em;color:rgba(255,255,255,0.9);text-align:justify;">
+          汽车智能技术专业教学资源库建设项目于2019年11月由教育部批准立项（2019-46），2022年教育部通过验收。由湖南汽车工程职业学院、烟台汽车工程职业学院、广西交通职业技术学院主持，联合全国11所职业院校和4家企业共同建设。资源库现有各类用户16000余名、其中活跃用户达8800余名，开发了视频、微课、动画、仿真等数字化资源7400余条，建成标准化课程24门、培训课程8门、双创课程4门、考证课程3门。已经建成为一个具备国际视野、国家水平，集教学、培训、实训、考证、竞赛、科普、思政等功能于一体的在线学习中心。
+        </p>
+      </div>
+      <!-- 右图 800×400 -->
+      <img src="assets/专业概况-配图.png" style="width:800px;height:400px;object-fit:cover;border-radius:4px;flex-shrink:0;margin-top:20px;">
+    </div>
+
+    <!-- ===== S2b: 课程中心 top=551 ===== -->
+    <div style="padding:0 60px 80px;" class="inner-sec" data-sec="课程中心">
+      <div class="glass-box" style="width:1800px;">
+        <div style="width:1600px;display:flex;flex-direction:column;gap:40px;">
+          <!-- 标题 -->
+          <div style="display:flex;align-items:center;gap:20px;padding-right:50px;height:78px;">
+            <img src="assets/课程中心-标题.png" style="width:299px;height:78px;">
+          </div>
+          <!-- 分类+详情 -->
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="tabs">
+              <button class="tab active">推荐课程</button>
+              <button class="tab">标准课程</button>
+              <button class="tab">培训课程</button>
+              <button class="tab">双创课程</button>
+            </div>
+            <img src="assets/课程中心-查看更多.png" style="width:87px;height:22px;cursor:pointer;">
+          </div>
+          <!-- 课程卡片区 -->
+          <div style="display:flex;gap:30px;align-items:stretch;">
+            <!-- 左边数据 -->
+            <div class="sidebar">
+              <div class="sidebar-item"><span class="s-num">28</span><span class="s-label">门课程</span></div>
+              <div class="sidebar-item"><span class="s-num">6</span><span class="s-label">门专业核心课</span></div>
+              <div class="sidebar-item"><span class="s-num">8</span><span class="s-label">门标准化课程</span></div>
+              <div class="sidebar-item"><span class="s-num">8</span><span class="s-label">门标课程已建知识图谱</span></div>
+              <div class="sidebar-item"><span class="s-num">8</span><span class="s-label">份教学标准</span></div>
+              <div class="sidebar-item"><span class="s-num">48</span><span class="s-label">期课程总期数</span></div>
+            </div>
+            <!-- 卡片1（默认） -->
+            <div class="card hover-card" style="flex:1;">
+              <img src="assets/课程中心-配图1.png" class="card-thumb">
+              <div class="card-content">
+                <div class="card-title">自动驾驶系统原理</div>
+                <div class="card-meta">
+                  <div class="card-meta-nums">
+                    <div class="meta-pair"><span class="meta-num">14</span><span class="meta-label">学时</span></div>
+                    <span class="meta-div"></span>
+                    <div class="meta-pair"><span class="meta-num">3</span><span class="meta-label">学分</span></div>
+                    <span class="meta-div"></span>
+                    <div class="meta-pair"><span class="meta-num">10</span><span class="meta-label">期</span></div>
+                  </div>
+                  <span class="meta-label">专业核心课</span>
+                </div>
+              </div>
+            </div>
+            <!-- 卡片2（高亮active） -->
+            <div class="card hover-card" style="width:427px;flex:none;">
+              <img src="assets/课程中心-配图2.png" class="card-thumb">
+              <div class="card-content">
+                <div class="card-title">车联网与智能交通</div>
+                <div class="card-meta">
+                  <div class="card-meta-nums">
+                    <div class="meta-pair"><span class="meta-num">14</span><span class="meta-label">学时</span></div>
+                    <span class="meta-div"></span>
+                    <div class="meta-pair"><span class="meta-num">3</span><span class="meta-label">学分</span></div>
+                    <span class="meta-div"></span>
+                    <div class="meta-pair"><span class="meta-num">10</span><span class="meta-label">期</span></div>
+                  </div>
+                  <span class="meta-label">专业核心课</span>
+                </div>
+              </div>
+            </div>
+            <!-- 卡片3（默认） -->
+            <div class="card hover-card" style="flex:1;">
+              <img src="assets/课程中心-配图3.png" class="card-thumb">
+              <div class="card-content">
+                <div class="card-title">新能源汽车动力系统</div>
+                <div class="card-meta">
+                  <div class="card-meta-nums">
+                    <div class="meta-pair"><span class="meta-num">14</span><span class="meta-label">学时</span></div>
+                    <span class="meta-div"></span>
+                    <div class="meta-pair"><span class="meta-num">3</span><span class="meta-label">学分</span></div>
+                    <span class="meta-div"></span>
+                    <div class="meta-pair"><span class="meta-num">10</span><span class="meta-label">期</span></div>
+                  </div>
+                  <span class="meta-label">专业核心课</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== S2c: 题库中心 top=1357 ===== -->
+    <div style="padding:0 160px 80px;" class="inner-sec" data-sec="题库中心">
+      <div style="width:1600px;display:flex;flex-direction:column;gap:40px;">
+        <!-- 标题 -->
+        <div style="display:flex;align-items:center;gap:20px;padding-right:50px;">
+          <img src="assets/题库中心-标题.png" style="width:299px;height:78px;">
+        </div>
+        <!-- 分类+详情 -->
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="tabs">
+            <button class="tab active">全部题型</button>
+            <button class="tab">单选题</button>
+            <button class="tab">多选题</button>
+            <button class="tab">判断题</button>
+            <button class="tab">简答题</button>
+            <button class="tab">填空题</button>
+          </div>
+          <img src="assets/题库中心-查看更多.png" style="width:87px;height:22px;cursor:pointer;">
+        </div>
+        <!-- 题目卡片 第一行 -->
+        <div style="display:flex;gap:30px;">
+          <div class="qcard">
+            <span class="qtag blue">判断题</span>
+            <div class="qtext">小米SU7标准版智驾配置中，用于处理高速和代客泊车的智能系统是以下哪一个？</div>
+            <div class="qfooter">
+              <span class="qfooter-info">难度：<span style="color:var(--accent)">易</span></span>
+              <div style="display:flex;gap:16px;align-items:center;">
+                <span class="qfooter-info">课程：汽车智能技术</span>
+                <span class="qfooter-info">驾驶</span>
+                <span class="qfooter-info">智能汽车</span>
+              </div>
+            </div>
+          </div>
+          <div class="qcard">
+            <span class="qtag blue">判断题</span>
+            <div class="qtext">激光雷达向前探测的距离和精度更远更高，能生成高分辨率的三维点云图像?</div>
+            <div class="qfooter">
+              <span class="qfooter-info">难度：<span style="color:var(--accent)">易</span></span>
+              <div style="display:flex;gap:16px;align-items:center;">
+                <span class="qfooter-info">课程：汽车智能技术</span>
+                <span class="qfooter-info">驾驶</span>
+                <span class="qfooter-info">智能汽车</span>
+              </div>
+            </div>
+          </div>
+          <div class="qcard">
+            <span class="qtag green">单选题</span>
+            <div class="qtext">小米SU7标准版智驾配置中，用于处理高速和代客泊车的智能系统是以下哪一个？</div>
+            <div class="qfooter">
+              <span class="qfooter-info">难度：<span style="color:var(--accent)">易</span></span>
+              <div style="display:flex;gap:16px;align-items:center;">
+                <span class="qfooter-info">课程：汽车智能技术</span>
+                <span class="qfooter-info">驾驶</span>
+                <span class="qfooter-info">智能汽车</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 题目卡片 第二行 -->
+        <div style="display:flex;gap:30px;">
+          <div class="qcard">
+            <span class="qtag green">单选题</span>
+            <div class="qtext">小米SU7标准版智驾配置怎么样？</div>
+            <div class="qfooter">
+              <span class="qfooter-info">难度：<span style="color:var(--accent)">易</span></span>
+              <div style="display:flex;gap:16px;align-items:center;">
+                <span class="qfooter-info">课程：汽车智能技术</span>
+                <span class="qfooter-info">驾驶</span>
+                <span class="qfooter-info">智能汽车</span>
+              </div>
+            </div>
+          </div>
+          <div class="qcard">
+            <span class="qtag yellow">简答题</span>
+            <div class="qtext">辅助驾驶/高阶智能辅助驾驶/自动驾驶应该怎么区分？</div>
+            <div class="qfooter">
+              <span class="qfooter-info">难度：<span style="color:var(--accent)">易</span></span>
+              <div style="display:flex;gap:16px;align-items:center;">
+                <span class="qfooter-info">课程：汽车智能技术</span>
+                <span class="qfooter-info">驾驶</span>
+                <span class="qfooter-info">智能汽车</span>
+              </div>
+            </div>
+          </div>
+          <div class="qcard">
+            <span class="qtag yellow">多选题</span>
+            <div class="qtext">电动汽车的能量回收系统主要通过哪种方式实现能量回收？</div>
+            <div class="qfooter">
+              <span class="qfooter-info">难度：<span style="color:var(--accent)">易</span></span>
+              <div style="display:flex;gap:16px;align-items:center;">
+                <span class="qfooter-info">课程：汽车智能技术</span>
+                <span class="qfooter-info">驾驶</span>
+                <span class="qfooter-info">智能汽车</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== S2d: 专业介绍 top=2113 ===== -->
+    <div style="padding:0 60px 80px;" class="inner-sec" data-sec="专业介绍">
+      <div class="glass-box" style="width:1800px;">
+        <div style="width:1600px;display:flex;flex-direction:column;gap:50px;align-items:center;">
+          <!-- 标题（居中） -->
+          <img src="assets/专业介绍-标题.png" style="width:361px;height:78px;">
+          <!-- 分类+详情 -->
+          <div style="width:1279px;display:flex;justify-content:center;align-items:center;gap:16px;position:relative;">
+            <div class="tabs">
+              <button class="tab active">专业师资</button>
+              <button class="tab">专业荣誉</button>
+              <button class="tab">历史沿革</button>
+              <button class="tab">专业资讯热点</button>
+            </div>
+            <img src="assets/专业介绍-查看更多.png" style="position:absolute;right:0;width:87px;height:22px;cursor:pointer;">
+          </div>
+          <!-- 内容区：左切换+中卡片+右切换 -->
+          <div style="display:flex;align-items:center;gap:80px;width:1600px;justify-content:center;">
+            <!-- 左切换按钮 -->
+            <img id="teacher-prev" src="assets/大切换-左.png" style="width:80px;height:80px;cursor:pointer;flex-shrink:0;">
+            <!-- 中央卡片 -->
+            <!-- 教师信息卡片 (1280×442, padding=40, gap=60) -->
+            <div style="width:1280px;height:442px;background:var(--card-bg);border:1px solid rgba(201,248,10,0.1);backdrop-filter:var(--card-blur);-webkit-backdrop-filter:var(--card-blur);border-radius:4px;padding:40px;display:flex;gap:60px;flex-shrink:0;">
+              <!-- 左列 866 -->
+              <div style="display:flex;flex-direction:column;gap:30px;width:866px;flex-shrink:0;">
+                <div id="teacher-name" style="font-family:var(--font-main);font-weight:700;font-size:30px;color:#FFFFFF;">张明远</div>
+                <div style="display:flex;flex-direction:column;">
+                  <!-- 研究方向 -->
+                  <div style="display:flex;align-items:center;gap:40px;padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.12);">
+                    <img src="assets/专业介绍-图标1.png" style="width:20px;height:20px;flex-shrink:0;">
+                    <div style="display:flex;align-items:center;gap:20px;flex:1;">
+                      <span style="font-family:var(--font-main);font-weight:500;font-size:16px;color:rgba(255,255,255,0.95);flex-shrink:0;">研究方向</span>
+                      <span id="teacher-research" style="font-family:var(--font-main);font-weight:400;font-size:16px;color:rgba(255,255,255,0.8);flex:1;">智能驾驶系统、车载传感器技术、自动驾驶算法</span>
+                    </div>
+                  </div>
+                  <!-- 职称职务 -->
+                  <div style="display:flex;align-items:center;gap:40px;padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.12);">
+                    <img src="assets/专业介绍-图标2.png" style="width:20px;height:20px;flex-shrink:0;">
+                    <div style="display:flex;align-items:center;gap:20px;flex:1;">
+                      <span style="font-family:var(--font-main);font-weight:500;font-size:16px;color:rgba(255,255,255,0.95);flex-shrink:0;">职称职务</span>
+                      <span id="teacher-title" style="font-family:var(--font-main);font-weight:400;font-size:16px;color:rgba(255,255,255,0.8);flex:1;">教授，博士生导师</span>
+                    </div>
+                  </div>
+                  <!-- 教师简介 -->
+                  <div style="display:flex;align-items:center;gap:40px;padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.12);">
+                    <img src="assets/专业介绍-图标3.png" style="width:18px;height:18px;flex-shrink:0;">
+                    <div style="display:flex;align-items:center;gap:20px;flex:1;">
+                      <span style="font-family:var(--font-main);font-weight:500;font-size:16px;color:rgba(255,255,255,0.95);flex-shrink:0;">教师简介</span>
+                      <span id="teacher-bio" style="font-family:var(--font-main);font-weight:400;font-size:16px;line-height:1.75em;text-align:justify;color:rgba(255,255,255,0.8);flex:1;">张明远，男，汉族，中共党员，1975年3月出生于湖南长沙，车辆工程与智能驾驶领域专家。现任汽车智能技术系主任、智能网联汽车研究中心主任。2001年获吉林大学车辆工程博士学位，2003年至2005年赴德国亚琛工业大学从事博士后研究。长期从事智能驾驶感知与决策、车路协同系统等方面的教学与科研工作，主持国家自然科学基金重点项目3项，发表SCI论文60余篇，授权发明专利22项。曾获中国汽车工业科技进步一等奖、教育部科技进步二等奖。</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- 教师照片 272×360 -->
+              <img id="teacher-photo" data-base-src="assets/专业介绍-教师照片" src="assets/专业介绍-教师照片1.png" style="width:272px;height:360px;object-fit:fill;border-radius:4px;flex-shrink:0;">
+            </div>
+            <!-- 右切换按钮 -->
+            <img id="teacher-next" src="assets/大切换-右.png" style="width:80px;height:80px;cursor:pointer;flex-shrink:0;">
+          </div>
+          <!-- 教师轮播 (13位，中间激活) -->
+          <div id="teacher-avatars" style="display:flex;justify-content:space-between;width:1600px;align-items:center;">
+            <div class="t-avatar" data-teacher="1" style="padding:6px;border-radius:1000px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.05);cursor:pointer;"><img src="assets/专业介绍-教师照片2.png" style="width:80px;height:80px;border-radius:93px;object-fit:cover;"></div>
+            <div class="t-avatar" data-teacher="2" style="padding:6px;border-radius:1000px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.05);cursor:pointer;"><img src="assets/专业介绍-教师照片3.png" style="width:80px;height:80px;border-radius:93px;object-fit:cover;"></div>
+            <div class="t-avatar" data-teacher="3" style="padding:6px;border-radius:1000px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.05);cursor:pointer;"><img src="assets/专业介绍-教师照片4.png" style="width:80px;height:80px;border-radius:93px;object-fit:cover;"></div>
+            <div class="t-avatar" data-teacher="4" style="padding:6px;border-radius:1000px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.05);cursor:pointer;"><img src="assets/专业介绍-教师照片5.png" style="width:80px;height:80px;border-radius:93px;object-fit:cover;"></div>
+            <div class="t-avatar" data-teacher="5" style="padding:6px;border-radius:1000px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.05);cursor:pointer;"><img src="assets/专业介绍-教师照片6.png" style="width:80px;height:80px;border-radius:93px;object-fit:cover;"></div>
+            <div class="t-avatar active" data-teacher="0" style="padding:6px;border-radius:1000px;background:linear-gradient(137deg,rgba(201,248,10,1) 10%,rgba(51,202,255,1) 89%);cursor:pointer;"><img src="assets/专业介绍-教师照片1.png" style="width:100px;height:100px;border-radius:116px;object-fit:cover;"></div>
+            <div class="t-avatar" data-teacher="6" style="padding:6px;border-radius:1000px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.05);cursor:pointer;"><img src="assets/专业介绍-教师照片7.png" style="width:80px;height:80px;border-radius:93px;object-fit:cover;"></div>
+            <div class="t-avatar" data-teacher="7" style="padding:6px;border-radius:1000px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.05);cursor:pointer;"><img src="assets/专业介绍-教师照片8.png" style="width:80px;height:80px;border-radius:93px;object-fit:cover;"></div>
+            <div class="t-avatar" data-teacher="8" style="padding:6px;border-radius:1000px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.05);cursor:pointer;"><img src="assets/专业介绍-教师照片9.png" style="width:80px;height:80px;border-radius:93px;object-fit:cover;"></div>
+            <div class="t-avatar" data-teacher="9" style="padding:6px;border-radius:1000px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.05);cursor:pointer;"><img src="assets/专业介绍-教师照片10.png" style="width:80px;height:80px;border-radius:93px;object-fit:cover;"></div>
+            <div class="t-avatar" data-teacher="10" style="padding:6px;border-radius:1000px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.05);cursor:pointer;"><img src="assets/专业介绍-教师照片11.png" style="width:80px;height:80px;border-radius:93px;object-fit:cover;"></div>
+            <div class="t-avatar" data-teacher="11" style="padding:6px;border-radius:1000px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.05);cursor:pointer;"><img src="assets/专业介绍-教师照片12.png" style="width:80px;height:80px;border-radius:93px;object-fit:cover;"></div>
+            <div class="t-avatar" data-teacher="12" style="padding:6px;border-radius:1000px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.05);cursor:pointer;"><img src="assets/专业介绍-教师照片13.png" style="width:80px;height:80px;border-radius:93px;object-fit:cover;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== S2e: 数字教材 top=3173 ===== -->
+    <div style="padding:0 0 80px 160px;" class="inner-sec" data-sec="数字教材">
+      <div style="display:flex;flex-direction:column;gap:50px;">
+        <!-- 标题 -->
+        <div style="display:flex;align-items:center;gap:20px;padding-right:50px;">
+          <img src="assets/数字教材-标题.png" style="width:299px;height:78px;">
+        </div>
+        <!-- 分类+详情 -->
+        <div style="width:1600px;display:flex;justify-content:space-between;align-items:center;">
+          <div class="tabs">
+            <button class="tab active">示范教材</button>
+            <button class="tab">混合式教材</button>
+          </div>
+          <img src="assets/数字教材-查看更多.png" style="width:87px;height:22px;cursor:pointer;">
+        </div>
+        <!-- 内容：左文 + 右书封面 -->
+        <div style="display:flex;align-items:center;gap:57px;overflow:hidden;">
+          <!-- 选中-卡片内容 (w=684, padding=40, gap=36) -->
+          <div style="width:684px;background:var(--card-bg);border:1.5px solid var(--card-bg);backdrop-filter:var(--card-blur);-webkit-backdrop-filter:var(--card-blur);border-radius:4px;padding:40px;display:flex;flex-direction:column;gap:36px;flex-shrink:0;">
+            <div id="book-title" style="font-family:var(--font-main);font-weight:700;font-size:24px;line-height:29px;letter-spacing:0.025em;color:var(--accent);">CAXA+Mastercam数控车编程与加工</div>
+            <div style="display:flex;flex-direction:column;gap:20px;">
+              <div id="book-author" style="font-family:'PingFang SC',sans-serif;font-size:16px;color:rgba(255,255,255,0.85);width:263px;">作者：卢修春编著</div>
+              <div id="book-publisher" style="font-family:'PingFang SC',sans-serif;font-size:16px;color:rgba(255,255,255,0.85);width:263px;">出版社：化学工业出版社</div>
+              <div id="book-intro" style="font-family:'PingFang SC',sans-serif;font-size:16px;line-height:29px;letter-spacing:0.0375em;color:rgba(255,255,255,0.85);height:58px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">本书基于CAXA数控车软件和Mastercam2017软件详细讲解了数控车削自动编程的基本操作及应用实例，在CAXA数控车部分主要构建了CAXA数控车基础、基本曲线的绘制、特殊曲线的绘制、CAXA数控车加工、数控车工技能等级鉴定实例和技能大赛数控车项目实例五个项目；在Mastercam2017数控车自动编程部分主要构建了Mastercam2017软件的界面与基本操作、Mastercam2017软件的基本图形绘制和Mastercam2017软件的数控车加工三个项目。本书可作为全国数控技能大赛集训、企业职工技能大赛选拔、企业职工培训的教程，也可作为高等职业技术学院、技师学院数控技术应用专业、模具专业、现代制造技术专业学生的教材和参考书。</div>
+            </div>
+            <!-- 进度条 + 导航按钮 -->
+            <div style="display:flex;align-items:center;gap:30px;">
+              <div style="flex:1;display:flex;flex-direction:column;gap:0;padding:4px 0;justify-content:space-between;">
+                <div style="display:flex;gap:10px;">
+                  <span id="book-current" style="font-family:'D-DIN';font-size:24px;line-height:29px;color:var(--accent);">01</span>
+                  <span style="font-family:'D-DIN';font-size:24px;line-height:29px;color:var(--accent);">/</span>
+                  <span style="font-family:'D-DIN';font-size:24px;line-height:29px;color:rgba(255,255,255,0.4);">06</span>
+                </div>
+                <div style="height:4px;background:rgba(255,255,255,0.1);border-radius:100px;"></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:30px;">
+                <img id="book-prev" src="assets/小切换-左.png" style="width:60px;height:60px;cursor:pointer;">
+                <img id="book-next" src="assets/小切换-右.png" style="width:60px;height:60px;cursor:pointer;">
+              </div>
+            </div>
+          </div>
+          <!-- 右侧书封面组 (gap=40, 当前项滚到左侧主位，左侧超出隐藏) -->
+          <div id="book-covers" style="width:859px;overflow:hidden;display:flex;gap:40px;align-items:center;flex-shrink:0;transition:transform .5s cubic-bezier(.25,.8,.35,1);">
+            <!-- 封面 0 -->
+            <div class="book-cover-wrap active" data-book="0" style="width:203px;height:300px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <img class="book-cover" src="assets/数字教材-配图1@2x.png" style="width:203px;height:300px;object-fit:cover;border:1.5px solid var(--accent);border-radius:4px;box-shadow:0px 10px 40px -6.67px rgba(201,248,10,0.25);">
+            </div>
+            <!-- 封面 1-5 -->
+            <div class="book-cover-wrap" data-book="1" style="width:203px;height:300px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <img class="book-cover" src="assets/数字教材-配图2@2x.png" style="height:240px;width:auto;object-fit:cover;border:1.5px solid rgba(201,248,10,0.2);border-radius:4px;">
+            </div>
+            <div class="book-cover-wrap" data-book="2" style="width:203px;height:300px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <img class="book-cover" src="assets/数字教材-配图3@2x.png" style="height:240px;width:auto;object-fit:cover;border:1.5px solid rgba(201,248,10,0.2);border-radius:4px;">
+            </div>
+            <div class="book-cover-wrap" data-book="3" style="width:203px;height:300px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <img class="book-cover" src="assets/数字教材-配图4@2x.png" style="height:240px;width:auto;object-fit:cover;border:1.5px solid rgba(201,248,10,0.2);border-radius:4px;">
+            </div>
+            <div class="book-cover-wrap" data-book="4" style="width:203px;height:300px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <img class="book-cover" src="assets/数字教材-配图5@2x.png" style="height:240px;width:auto;object-fit:cover;border:1.5px solid rgba(201,248,10,0.2);border-radius:4px;">
+            </div>
+            <div class="book-cover-wrap" data-book="5" style="width:203px;height:300px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <img class="book-cover" src="assets/数字教材-配图6.png" style="height:240px;width:auto;object-fit:cover;border:1.5px solid rgba(201,248,10,0.2);border-radius:4px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== S2f: 虚拟展厅 top=3855 ===== -->
+    <div style="padding:0 160px 80px;" class="inner-sec" data-sec="虚拟展厅">
+      <div style="width:1600px;display:flex;flex-direction:column;gap:50px;align-items:center;">
+        <!-- 标题（居中） -->
+        <img src="assets/虚拟展厅-标题.png" style="width:361px;height:78px;">
+        <!-- 内容：左大图+右菜单 -->
+        <div style="display:flex;gap:40px;width:1600px;align-items:stretch;">
+          <!-- 展厅首页大图 (1260×522, 固定宽) -->
+          <img id="exhibition-img" data-base-src="assets/虚拟展厅" src="assets/虚拟展厅配图.png"
+            style="width:1260px;height:522px;flex:none;object-fit:fill;border-radius:4px;border:1.5px solid var(--accent);box-shadow:0px 10px 40px -6.67px rgba(201,248,10,0.25);transition:opacity .3s ease;">
+          <!-- 虚拟展厅-切换 (w=300, gap=30) -->
+          <div id="exhibition-tabs" style="width:300px;display:flex;flex-direction:column;gap:30px;flex-shrink:0;">
+            <!-- 展厅首页（选中） -->
+            <div class="exhibit-tab active" data-exhibit="0">
+              <div class="et-row">
+                <span class="et-title">展厅首页</span>
+                <span class="et-sub">Overview</span>
+              </div>
+              <div class="et-bar"></div>
+            </div>
+            <!-- 科学研究（默认） -->
+            <div class="exhibit-tab" data-exhibit="1">
+              <div class="et-row">
+                <span class="et-title">科学研究</span>
+                <span class="et-sub">Research Showroom</span>
+              </div>
+              <div class="et-bar"></div>
+            </div>
+            <!-- 名师风采（默认） -->
+            <div class="exhibit-tab" data-exhibit="2">
+              <div class="et-row">
+                <span class="et-title">名师风采</span>
+                <span class="et-sub">Expert Profiles</span>
+              </div>
+              <div class="et-bar"></div>
+            </div>
+            <!-- 专业大数据（默认） -->
+            <div class="exhibit-tab" data-exhibit="3">
+              <div class="et-row">
+                <span class="et-title">专业大数据</span>
+                <span class="et-sub">Big Data Dashboard</span>
+              </div>
+              <div class="et-bar"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /主内容区 -->
+</section>
+
+<!-- ===== S3: 底部 ===== -->
+<section class="flush" style="background:rgba(0,0,0,0.1);border-top:1px solid rgba(255,255,255,0.1);">
+  <!-- 底部背景装饰图（opacity 0.16） -->
+  <img src="assets/底部配图.png"
+    style="position:absolute;inset:0;width:1920px;height:auto;object-fit:cover;opacity:0.16;pointer-events:none;">
+  <div style="position:relative;width:1920px;padding:50px 160px;display:flex;justify-content:space-between;align-items:center;">
+    <!-- Logo -->
+    <img src="assets/底部- logo.png" style="width:500px;height:40px;object-fit:contain;">
+    <!-- 版权链接行 -->
+    <div style="display:flex;align-items:center;gap:20px;">
+      <span style="font-family:'Microsoft YaHei',sans-serif;font-size:14px;line-height:1.2em;color:rgba(255,255,255,0.6);cursor:pointer;">版权所有</span>
+      <span style="color:rgba(255,255,255,0.2);font-size:18px;">|</span>
+      <span style="font-family:'Microsoft YaHei',sans-serif;font-size:14px;line-height:1.2em;color:rgba(255,255,255,0.6);cursor:pointer;">隐私政策</span>
+      <span style="color:rgba(255,255,255,0.2);font-size:18px;">|</span>
+      <span style="font-family:'Microsoft YaHei',sans-serif;font-size:14px;line-height:1.2em;color:rgba(255,255,255,0.6);cursor:pointer;">用户协议</span>
+      <span style="color:rgba(255,255,255,0.2);font-size:18px;">|</span>
+      <span style="font-family:'Microsoft YaHei',sans-serif;font-size:14px;line-height:1.2em;color:rgba(255,255,255,0.6);cursor:pointer;">备案信息</span>
+      <span style="color:rgba(255,255,255,0.2);font-size:18px;">|</span>
+      <span style="font-family:'Microsoft YaHei',sans-serif;font-size:14px;line-height:1.2em;color:rgba(255,255,255,0.6);cursor:pointer;">联系我们</span>
+    </div>
+  </div>
+</section>
+
+</div></div>
+
+<script>
+  var DESIGN_W=1920, stage=document.getElementById('stage'), wrap=document.getElementById('scaleWrap');
+  function fit(){
+    var s=Math.min(1,innerWidth/DESIGN_W);
+    var secs=stage.querySelectorAll('section');
+    var last=secs[secs.length-1];
+    var H=last.offsetTop+last.offsetHeight;
+    stage.style.transform='translateX(-50%) scale('+s+')';
+    wrap.style.height=(H*s)+'px';
+  }
+  addEventListener('resize',fit);addEventListener('load',fit);fit();
+
+  // 滚动入场：inner-sec 也需入场动效
+  var allSecs = document.querySelectorAll('section, .inner-sec');
+  allSecs.forEach(function(s){
+    if(!s.classList.contains('reveal')){
+      s.style.opacity='0';
+      s.style.transform='translateY(40px)';
+      s.style.transition='opacity .7s ease, transform .7s ease';
+    }
+  });
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(e.isIntersecting){
+        e.target.style.opacity='1';
+        e.target.style.transform='none';
+        io.unobserve(e.target);
+      }
+    });
+  },{threshold:0.08});
+  document.querySelectorAll('section,.inner-sec').forEach(function(s){io.observe(s);});
+  function revealCheck(){
+    document.querySelectorAll('section,.inner-sec').forEach(function(s){
+      var r=s.getBoundingClientRect();
+      if(r.top<innerHeight*0.9&&r.bottom>0){s.style.opacity='1';s.style.transform='none';}
+    });
+  }
+  addEventListener('scroll',revealCheck,{passive:true});
+  revealCheck();
+
+  // 虚拟展厅分类切换
+  var exhibitData=[
+    {name:'展厅首页',suffix:'配图'},
+    {name:'科学研究',suffix:'-科学研究配图'},
+    {name:'名师风采',suffix:'-名师风采配图'},
+    {name:'专业大数据',suffix:'-专业大数据配图'}
+  ];
+  var currentExhibit=0;
+  function renderExhibit(idx){
+    currentExhibit=idx;
+    var img=document.getElementById('exhibition-img');
+    var base=img.getAttribute('data-base-src');
+    img.style.opacity='0';
+    setTimeout(function(){
+      img.src=base+exhibitData[idx].suffix+'.png';
+      img.onload=function(){img.style.opacity='1';};
+      img.onerror=function(){img.style.opacity='1';};
+    },150);
+    document.querySelectorAll('.exhibit-tab').forEach(function(t,i){
+      if(i===idx){t.classList.add('active');}else{t.classList.remove('active');}
+    });
+  }
+  document.querySelectorAll('.exhibit-tab').forEach(function(t){
+    t.addEventListener('click',function(){renderExhibit(parseInt(this.getAttribute('data-exhibit')));});
+  });
+
+  // 数字教材轮播（6本）
+  var books=[
+    {title:'CAXA+Mastercam数控车编程与加工',author:'卢修春编著',publisher:'化学工业出版社',intro:'本书基于CAXA数控车软件和Mastercam2017软件详细讲解了数控车削自动编程的基本操作及应用实例，在CAXA数控车部分主要构建了CAXA数控车基础、基本曲线的绘制、特殊曲线的绘制、CAXA数控车加工、数控车工技能等级鉴定实例和技能大赛数控车项目实例五个项目；在Mastercam2017数控车自动编程部分主要构建了Mastercam2017软件的界面与基本操作、Mastercam2017软件的基本图形绘制和Mastercam2017软件的数控车加工三个项目。本书可作为全国数控技能大赛集训、企业职工技能大赛选拔、企业职工培训的教程，也可作为高等职业技术学院、技师学院数控技术应用专业、模具专业、现代制造技术专业学生的教材和参考书。'},
+    {title:'汽车电工电子技术',author:'王卫东主编',publisher:'机械工业出版社',intro:'本书以汽车电工电子技术为主线，系统介绍了直流电路、正弦交流电路、磁路与变压器、半导体器件、基本放大电路、集成运算放大器、数字电路基础、汽车传感器、汽车执行器等内容。每章均配有学习目标、技能训练、本章小结和习题，便于学生巩固所学知识。本书可作为高等职业院校汽车类相关专业教材，也可作为汽车维修技术人员培训用书。'},
+    {title:'汽车发动机电控系统检修',author:'李明明主编',publisher:'人民邮电出版社',intro:'本书按照汽车发动机电控系统检修的实际工作过程组织内容，系统介绍了发动机电控系统认知、传感器检修、燃油喷射系统检修、点火系统检修、怠速控制系统检修、排放控制系统检修、电控发动机综合故障诊断等项目。书中融入大量企业真实案例和实训任务，注重学生职业技能培养，适合作为汽车检测与维修技术专业教材。'},
+    {title:'汽车底盘构造与维修',author:'张立新主编',publisher:'高等教育出版社',intro:'本书系统介绍了汽车传动系统、行驶系统、转向系统和制动系统的构造、工作原理及维修方法。内容包括离合器、手动变速器、自动变速器、万向传动装置、驱动桥、车架与车桥、车轮与轮胎、悬架、机械转向系统、动力转向系统、常规制动系统、防抱死制动系统等。本书图文并茂，理论与实践结合，适合汽车类专业教学使用。'},
+    {title:'智能网联汽车概论',author:'陈清泉主编',publisher:'清华大学出版社',intro:'本书围绕智能网联汽车技术体系，系统介绍了环境感知、智能决策、车辆控制、车联网、高精地图、自动驾驶测试评价等关键技术。同时结合产业发展趋势，分析了智能网联汽车的商业模式、政策法规和典型应用场景。本书内容新颖、体系完整，可作为智能网联汽车技术专业入门教材和相关从业人员参考用书。'},
+    {title:'新能源汽车动力电池及管理系统',author:'赵福堂主编',publisher:'北京理工大学出版社',intro:'本书系统介绍了新能源汽车动力电池基础知识、锂离子电池原理与结构、动力电池成组技术、电池管理系统功能与架构、电池热管理技术、动力电池测试与评价、动力电池回收与梯次利用等内容。书中结合大量工程实例和实训项目，注重理论与实践结合，适合新能源汽车技术专业教学和相关企业技术人员参考。'}
+  ];
+  var currentBook=0;
+  function renderBook(idx){
+    currentBook=idx;
+    var b=books[idx];
+    document.getElementById('book-title').textContent=b.title;
+    document.getElementById('book-author').textContent='作者：'+b.author;
+    document.getElementById('book-publisher').textContent='出版社：'+b.publisher;
+    document.getElementById('book-intro').textContent=b.intro;
+    document.getElementById('book-current').textContent=(idx+1).toString().padStart(2,'0');
+    var covers=document.getElementById('book-covers');
+    var firstWrap=covers.querySelector('.book-cover-wrap');
+    var step=243;
+    firstWrap.style.marginLeft='-'+(idx*step)+'px';
+    document.querySelectorAll('.book-cover-wrap').forEach(function(w,i){
+      var img=w.querySelector('img');
+      if(i===idx){
+        w.classList.add('active');
+        img.style.width='203px';img.style.height='300px';
+        img.style.borderColor='var(--accent)';
+        img.style.boxShadow='0px 10px 40px -6.67px rgba(201,248,10,0.25)';
+      } else {
+        w.classList.remove('active');
+        img.style.width='auto';img.style.height='240px';
+        img.style.borderColor='rgba(201,248,10,0.2)';
+        img.style.boxShadow='none';
+      }
+    });
+  }
+  document.getElementById('book-prev').addEventListener('click',function(){renderBook((currentBook-1+books.length)%books.length);});
+  document.getElementById('book-next').addEventListener('click',function(){renderBook((currentBook+1)%books.length);});
+  document.querySelectorAll('.book-cover-wrap').forEach(function(w){
+    w.addEventListener('click',function(){renderBook(parseInt(this.getAttribute('data-book')));});
+  });
+
+  // 教师轮播（13位，简介控制约4行）
+  var teachers=[
+    {name:'张明远',research:'智能驾驶系统、车载传感器技术、自动驾驶算法',title:'教授，博士生导师',bio:'张明远，男，1975年生于湖南长沙，车辆工程与智能驾驶领域专家。现任汽车智能技术系主任、智能网联汽车研究中心主任，教授、博士生导师。2001年获吉林大学车辆工程博士学位，2003年至2005年赴德国亚琛工业大学从事博士后研究。长期从事智能驾驶感知与决策、车路协同系统教学与科研工作，主持国家自然科学基金重点项目3项，发表SCI论文60余篇。',photo:'1'},
+    {name:'李婉清',research:'车联网通信、V2X协议、边缘计算',title:'副教授，硕士生导师',bio:'李婉清，女，1982年生于江苏南京，通信与信息系统博士，副教授、硕士生导师。现任汽车智能技术系副主任，主要研究方向为车联网通信协议、车路协同与边缘计算。主持省部级科研项目5项，发表SCI/EI论文40余篇，获省级教学成果一等奖1项。长期承担《车联网技术》《智能网联汽车概论》等课程教学，兼任中国通信学会车联网专委会委员。',photo:'2'},
+    {name:'王志强',research:'新能源汽车电控、电池管理系统、电机驱动',title:'高级工程师，企业导师',bio:'王志强，男，1978年生于湖北武汉，电力电子与电力传动博士，高级工程师、企业导师。曾任职于某新能源汽车企业研发中心10年，现任本专业新能源汽车电控技术课程负责人。主持企业横向课题8项，授权发明专利15项。主要研究方向为新能源汽车电控、电池管理系统与电机驱动技术，兼任中国汽车工程学会电动汽车分会委员。',photo:'3'},
+    {name:'陈思雨',research:'智能座舱、人机交互、汽车HMI设计',title:'讲师',bio:'陈思雨，女，1990年生于浙江杭州，设计学硕士，讲师。主要从事智能汽车人机交互、智能座舱界面设计研究。参与国家级虚拟仿真教学项目2项，指导学生获全国职业院校技能大赛一等奖3项。承担《汽车HMI设计》《智能座舱技术》等课程教学，发表核心期刊论文10余篇，获评校级青年教师教学竞赛一等奖。',photo:'4'},
+    {name:'刘建华',research:'自动驾驶测试、功能安全、预期功能安全',title:'教授，博士生导师',bio:'刘建华，男，1969年生于四川成都，机械工程博士，教授、博士生导师。长期从事自动驾驶测试评价、汽车功能安全与预期功能安全研究。主持国家自然科学基金重点项目2项，制定行业标准3项，获省部级科技进步二等奖2项。承担《自动驾驶测试技术》《功能安全基础》等课程教学，兼任全国汽车标准化技术委员会智能网联汽车分标委委员。',photo:'5'},
+    {name:'赵天宇',research:'车载操作系统、AUTOSAR、智能座舱软件',title:'副教授，硕士生导师',bio:'赵天宇，男，1985年生于广东深圳，计算机科学与技术博士，副教授、硕士生导师。现任智能汽车软件技术研究所所长，主要研究方向为车载操作系统、AUTOSAR架构与智能座舱软件开发。主持国家级科研项目4项，获省部级科技进步一等奖1项。承担《汽车软件技术》等课程，兼任中国计算机学会嵌入式系统专委会委员。',photo:'6'},
+    {name:'孙雅琴',research:'车辆动力学、智能驾驶仿真、数字孪生',title:'高级工程师',bio:'孙雅琴，女，1980年生于陕西西安，车辆工程博士，高级工程师。曾任职于国内知名汽车企业研究院，现任本专业智能驾驶仿真技术课程负责人。参与制定行业标准2项，发表高水平论文30余篇。主要研究方向为车辆动力学、智能驾驶仿真与数字孪生技术，兼任中国汽车工程学会汽车仿真技术分会委员，指导学生获国家级学科竞赛奖励5项。',photo:'7'},
+    {name:'周海涛',research:'激光雷达感知、目标检测与跟踪、多传感器融合',title:'教授',bio:'周海涛，男，1972年生于山东青岛，模式识别与智能系统博士，教授。长期从事智能驾驶环境感知、激光雷达点云处理研究。主持国家自然科学基金重点项目2项，授权发明专利18项。承担《智能驾驶感知技术》《激光雷达原理与应用》等课程教学，兼任中国人工智能学会模式识别专委会委员，指导学生获国家级机器人竞赛一等奖2项。',photo:'8'},
+    {name:'吴静怡',research:'智能交通系统、车路协同、交通大数据',title:'副教授',bio:'吴静怡，女，1988年生于福建厦门，交通运输工程博士，副教授。主要研究方向为智能交通系统、车路协同与交通大数据分析。主持省部级科研项目3项，获省级教学成果二等奖1项。承担《智能交通系统》《交通大数据技术》等课程，发表高水平论文20余篇，兼任中国智能交通协会青年专家委员会委员，指导学生获交通科技大赛国家级奖励3项。',photo:'9'},
+    {name:'郑志伟',research:'新能源汽车动力电机、电控技术、能量管理',title:'高级工程师，企业导师',bio:'郑志伟，男，1976年生于辽宁沈阳，电气工程博士，高级工程师、企业导师。具有15年新能源汽车电机电控研发经验，现任本专业新能源汽车技术方向企业导师。主持企业横向课题10余项，获中国汽车工业科技进步二等奖1项。研究方向为新能源汽车动力电机、电控技术与能量管理，兼任中国电工技术学会电动车辆专委会委员。',photo:'10'},
+    {name:'黄晓蕾',research:'智能网联汽车信息安全、车载网络、密码学',title:'讲师',bio:'黄晓蕾，女，1992年生于浙江宁波，网络空间安全博士，讲师。主要从事智能网联汽车信息安全、车载网络攻防技术研究。参与国家重点研发计划项目1项，指导学生获网络安全竞赛国家级奖项2项。承担《汽车信息安全》《车载网络技术》等课程教学，兼任中国密码学会车联网安全专委会委员，获省级高校网络安全竞赛优秀指导教师称号。',photo:'11'},
+    {name:'林国栋',research:'汽车电子电气架构、域控制器、SOA',title:'教授，博士生导师',bio:'林国栋，男，1968年生于江苏苏州，控制科学与工程博士，教授、博士生导师。现任汽车智能技术学院院长，长期从事汽车电子电气架构、域控制器与面向服务架构研究。主持国家自然科学基金重点项目4项，获国家级教学成果二等奖1项。承担《汽车电子电气架构》课程，兼任教育部高等学校自动化类专业教学指导委员会委员。',photo:'12'},
+    {name:'谢雨桐',research:'人机共驾、驾驶行为分析、智能汽车伦理',title:'副教授',bio:'谢雨桐，女，1986年生于四川重庆，心理学博士，副教授。主要研究方向为人机共驾、驾驶行为分析与智能汽车伦理。主持国家自然科学基金青年项目1项，发表SSCI/SCI论文20余篇。承担《人机交互与驾驶行为》《智能汽车伦理》等课程教学，兼任中国心理学会工程心理学专委会委员，主持省级教学改革项目1项。',photo:'13'}
+  ];
+  var currentTeacher=0;
+  function renderTeacher(idx){
+    currentTeacher=idx;
+    var t=teachers[idx];
+    document.getElementById('teacher-name').textContent=t.name;
+    document.getElementById('teacher-research').textContent=t.research;
+    document.getElementById('teacher-title').textContent=t.title;
+    document.getElementById('teacher-bio').textContent=t.bio;
+    var photoEl=document.getElementById('teacher-photo');
+    photoEl.src=photoEl.getAttribute('data-base-src')+t.photo+'.png';
+    document.querySelectorAll('.t-avatar').forEach(function(a){
+      var img=a.querySelector('img');
+      if(a.getAttribute('data-teacher')==idx){
+        a.classList.add('active');
+        a.style.background='linear-gradient(137deg,rgba(201,248,10,1) 10%,rgba(51,202,255,1) 89%)';
+        a.style.borderColor='transparent';
+        img.style.width='100px';img.style.height='100px';img.style.borderRadius='116px';
+      } else {
+        a.classList.remove('active');
+        a.style.background='rgba(255,255,255,0.1)';
+        a.style.borderColor='rgba(255,255,255,0.05)';
+        img.style.width='80px';img.style.height='80px';img.style.borderRadius='93px';
+      }
+    });
+  }
+  document.getElementById('teacher-prev').addEventListener('click',function(){renderTeacher((currentTeacher-1+teachers.length)%teachers.length);});
+  document.getElementById('teacher-next').addEventListener('click',function(){renderTeacher((currentTeacher+1)%teachers.length);});
+  document.querySelectorAll('.t-avatar[data-teacher]').forEach(function(a){
+    a.addEventListener('click',function(){renderTeacher(parseInt(this.getAttribute('data-teacher')));});
+  });
+
+  // 全局淡青蓝 Spotlight + 卡片局部描边高亮
+  (function(){
+    var spotlight=document.createElement('div');
+    spotlight.id='spotlight';
+    document.body.appendChild(spotlight);
+
+    var sx=innerWidth/2, sy=innerHeight/2, tx=sx, ty=sy;
+    var active=false, raf=0;
+
+    function updateCardVars(mx,my){
+      var cards=document.querySelectorAll('.card, .qcard, .glass-box');
+      for(var i=0;i<cards.length;i++){
+        var c=cards[i];
+        var r=c.getBoundingClientRect();
+        c.style.setProperty('--mx', (mx-r.left)+'px');
+        c.style.setProperty('--my', (my-r.top)+'px');
+      }
+    }
+
+    addEventListener('mousemove',function(e){
+      tx=e.clientX; ty=e.clientY;
+      if(!active){active=true; document.body.classList.add('spotlight-active');}
+      updateCardVars(e.clientX,e.clientY);
+    });
+    addEventListener('mouseleave',function(){
+      active=false; document.body.classList.remove('spotlight-active');
+    });
+
+    function loop(){
+      sx += (tx-sx)*0.06;
+      sy += (ty-sy)*0.06;
+      spotlight.style.left=sx+'px';
+      spotlight.style.top=sy+'px';
+      raf=requestAnimationFrame(loop);
+    }
+    loop();
+  })();
+</script>
+</body>
+</html>

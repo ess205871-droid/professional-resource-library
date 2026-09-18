@@ -1,0 +1,29 @@
+# ===== 依赖 =====
+node_modules/
+
+# ===== Vue 脚手架（静态演示不使用） =====
+src/
+vite.config.ts
+uno.config.ts
+tsconfig.json
+tsconfig.app.json
+tsconfig.node.json
+vite-env.d.ts
+.husky/
+package.json
+package-lock.json
+
+# ===== 开发临时截图（非交付内容） =====
+/*.png
+/*.jpg
+
+# ===== 本地 IDE / 工具配置 =====
+.qoder/
+.vscode/
+.aicoding-chat-workspace
+
+# ===== 设计稿缓存 =====
+.figma-cache/
+
+# ===== 系统文件 =====
+.DS_Store
