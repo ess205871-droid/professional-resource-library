@@ -156,3 +156,14 @@
 - **目标**：`/Users/chenjiao/Desktop/专业资源库演示/`
 - **内容**：`index.html`（来自 index-local.html）+ `assets/` + `fonts/`
 - **大小**：119M
+
+## 2026-09-18 首屏大图无损压缩 + 上传 GitHub
+
+- **首屏大图**：`assets/首屏-动态智能体.png` 原为 41MB（1000×1000，导出压缩质量异常），用 `sips -s format png` 重编码后 **498KB**，尺寸/alpha/色彩解释不变。像素级验证：两版各自转 BMP 后 `cmp` **逐字节一致** → 无损，放心替换。工作区与桌面演示版均已替换，assets 95M→54M。
+- **仓库**：https://github.com/ess205871-droid/professional-resource-library （公开）
+- **上传方式**：本机无 git（Xcode CLI Tools 因连不上 Apple 更新服务器安装失败），改用纯 Node 脚本 `.upload-github.cjs` 直连 GitHub Git Data API（blob → tree → commit → 更新 ref）。
+- **文件映射**：`index-local.html`（assets/ 相对路径）→ 仓库 `index.html`（可在线预览）；`index.html`（本机 /Downloads 绝对路径）→ 仓库 `index-source.html`（设计源存档）。
+- **上传清单**：64 个文件 / 78.6 MB（根文件 4 + assets 54 + fonts 6）。
+- **远程校验**：文件总数 64、`index.html` 中 `/Downloads` 引用 0 处、`assets/` 引用 50 处、首屏大图 498KB ✓。
+- **在线预览**：GitHub Pages 已开启 → https://ess205871-droid.github.io/professional-resource-library/ ；实测 47/47 图片加载成功、视频 readyState≥1、Console 无 404、首屏 CountUp 正常显示终值。
+- **安全**：旧的明文 token 已撤销；新 token 仅经环境变量传给脚本，未落盘、未写入任何文件（项目内 `grep ghp_` 无残留）。
